@@ -6,7 +6,7 @@ const config = require('./config.global');
  * CONFIGURATION
  */
 config.host = '0.0.0.0'; // Interface to listen on, 0.0.0.0 to listen on all available
-config.port = 6040; // Port to listen on
+config.port = process.env.LISTEN_PORT || 6040; // Port to listen on
 
 /**
  * LISK node
