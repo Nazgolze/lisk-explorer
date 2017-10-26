@@ -72,6 +72,7 @@ node('lisk-explorer-01'){
     stage ('Start Redis') {
       try {
         sh '''
+        sudo systemctl stop redis-server
         N=${EXECUTOR_NUMBER:-0}
         #./redis-server --port 700$N > redis$N.log &
 
