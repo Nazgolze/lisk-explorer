@@ -74,6 +74,7 @@ node('lisk-explorer-01'){
         sh '''
         N=${EXECUTOR_NUMBER:-0}
         ./redis-server --port 700$N > redis$N.log &
+        cp test/config.test ./config.js
 
         '''
       } catch (err) {
@@ -124,7 +125,6 @@ node('lisk-explorer-01'){
       try {
       sh '''
       N=${EXECUTOR_NUMBER:-0}
-      cp test/config.test ./config.js
       PORT=400$N LISTEN_PORT=604$N REDIS_PORT=700$N node $(pwd)/app.js --redisPort 700$N &> ./explorer$N.log &
       sleep 20
       netstat -tunap > key_netstat.log
