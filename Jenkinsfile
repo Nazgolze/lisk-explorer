@@ -193,6 +193,7 @@ node('lisk-explorer-01'){
       deleteDir()
     }
 
+    def pr_branch = ''
     if (env.CHANGE_BRANCH != null) {
       pr_branch = " (${env.CHANGE_BRANCH})"
     }
