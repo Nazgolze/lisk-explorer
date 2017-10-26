@@ -143,7 +143,7 @@ node('lisk-explorer-01'){
         # Run Tests
         N=${EXECUTOR_NUMBER:-0}
         sed -i -r -e "s/6040/604$N/" test/node.js
-        npm run test
+        REDIS_PORT=700$N npm run test
         '''
       } catch (err) {
         echo "Error: ${err}"
