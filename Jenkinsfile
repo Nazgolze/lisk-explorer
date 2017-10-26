@@ -1,4 +1,5 @@
 def fail(reason) {
+  def pr_branch = ''
   if (env.CHANGE_BRANCH != null) {
     pr_branch = " (${env.CHANGE_BRANCH})"
   }
@@ -88,7 +89,7 @@ node('lisk-explorer-01'){
         sh '''
         N=${EXECUTOR_NUMBER:-0}
         # Generate market data
-        REDIS_PORT=700$ grunt candles:build
+        REDIS_PORT=700$N grunt candles:build
         '''
       } catch (err) {
         echo "Error: ${err}"
@@ -192,7 +193,6 @@ node('lisk-explorer-01'){
       deleteDir()
     }
 
-    def pr_branch = ''
     if (env.CHANGE_BRANCH != null) {
       pr_branch = " (${env.CHANGE_BRANCH})"
     }
