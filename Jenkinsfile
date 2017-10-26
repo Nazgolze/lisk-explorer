@@ -86,8 +86,9 @@ node('lisk-explorer-01'){
     stage ('Build Candles') {
       try {
         sh '''
+        N=${EXECUTOR_NUMBER:-0}
         # Generate market data
-        grunt candles:build
+        REDIS_PORT=700$ grunt candles:build
         '''
       } catch (err) {
         echo "Error: ${err}"
