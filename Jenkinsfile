@@ -1,4 +1,5 @@
 def fail(reason) {
+  def pr_branch = ''
   if (env.CHANGE_BRANCH != null) {
     pr_branch = " (${env.CHANGE_BRANCH})"
   }
@@ -36,6 +37,8 @@ node('lisk-explorer-01'){
         # Install Deps
         npm install
         ./node_modules/protractor/bin/webdriver-manager update
+        wget https://downloads.liskwallet.net/lisk/redis/redis-3.2.9-Linux-x86_64.tar.gz
+        tar -zvxf redis-3.2.9-Linux-x86_64.tar.gz
         '''
       } catch (err) {
         echo "Error: ${err}"
@@ -67,11 +70,26 @@ node('lisk-explorer-01'){
       }
     }
 
+    stage ('Start Redis') {
+      try {
+        sh '''
+        N=${EXECUTOR_NUMBER:-0}
+        ./redis-server --port 700$N > redis$N.log &
+        cp test/config.test ./config.js
+
+        '''
+      } catch (err) {
+        echo "Error: ${err}"
+        fail('Stopping build, webpack failed')
+      }
+    }
+
     stage ('Build Candles') {
       try {
         sh '''
+        N=${EXECUTOR_NUMBER:-0}
         # Generate market data
-        grunt candles:build
+        REDIS_PORT=700$N grunt candles:build
         '''
       } catch (err) {
         echo "Error: ${err}"
@@ -109,8 +127,7 @@ node('lisk-explorer-01'){
       try {
       sh '''
       N=${EXECUTOR_NUMBER:-0}
-      cp test/config.test ./config.js
-      PORT=400$N LISTEN_PORT=604$N node $(pwd)/app.js &> ./explorer$N.log &
+      PORT=400$N LISTEN_PORT=604$N REDIS_PORT=700$N node $(pwd)/app.js --redisPort 700$N &> ./explorer$N.log &
       sleep 20
       netstat -tunap > key_netstat.log
       '''
@@ -126,7 +143,7 @@ node('lisk-explorer-01'){
         # Run Tests
         N=${EXECUTOR_NUMBER:-0}
         sed -i -r -e "s/6040/604$N/" test/node.js
-        npm run test
+        REDIS_PORT=700$N npm run test
         '''
       } catch (err) {
         echo "Error: ${err}"
@@ -170,6 +187,7 @@ node('lisk-explorer-01'){
     pkill -f "Xvfb :9$N" -9 || true
     pkill -f "webpack.*808$N" -9 || true
     pkill -f "explorer$N.log" || true
+    pkill -f "redis-server.*700$N" || true
     '''
     dir('node_modules') {
       deleteDir()
